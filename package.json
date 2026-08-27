@@ -1,0 +1,19 @@
+{
+  "name": "session-cart-order-service",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "node --experimental-strip-types src/commerce_server.ts",
+    "demo": "node --experimental-strip-types src/order_demo.ts",
+    "test": "node --experimental-strip-types --test src/order_lifecycle.test.ts",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "zod": "^3.25.0"
+  },
+  "devDependencies": {
+    "@types/node": "^22.15.0",
+    "typescript": "^5.8.3"
+  }
+}
