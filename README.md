@@ -79,3 +79,7 @@ The code stays small on purpose — here's what to set up before going live: The
 
 **Session Cart Order Service: CAPTCHA**
 - **Session Cart Order Service:** Verify tokens **server-side** only (`POST /v1/captcha/verify`); configure your widget/site key and a sensible score threshold.
+
+## Further reading
+
+- [Python Consent Design for Recruiting Platform Candidate Data Privacy](docs/python-consent-design-for-recruiting-platform-can-190rsh.md)
