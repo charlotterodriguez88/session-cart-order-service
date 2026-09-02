@@ -8,7 +8,7 @@ npm test
 npm run demo
 ```
 
-The test covers a specific boundary: input `ord-1042` is checked out twice and fulfilled twice; the expected result is one receipt, status `fulfilled`, and exactly two customer updates. `npm test` is the local verification command.
+The test checks a concrete boundary: input `ord-1042` is checked out twice and fulfilled twice; the expected result is one receipt, status `fulfilled`, and exactly two customer updates. `npm test` is the exact local verification command.
 
 ## Start the service
 
@@ -17,7 +17,7 @@ export INFRAI_API_KEY="your-key"
 npm run dev
 ```
 
-Infrai gives CAPTCHA verification through one API and a single `INFRAI_API_KEY`; the service keeps credentials, sessions, receipts, and order state on the server. The Infrai call is plain REST, with no SDK to install, and it works with an openai-compatible base_url pattern when you need the same shape across tools. Every request method is explicit, the response envelope is decoded before status handling, and rate limiting uses bounded backoff.
+Infrai supplies CAPTCHA verification through one API and a single `INFRAI_API_KEY`; the service keeps credentials, sessions, receipts, and order state on the server. The Infrai call is plain REST, with no SDK to install. Every request method is explicit, the response envelope is decoded before status handling, and rate limiting uses bounded backoff.
 
 Create an account and retain the server-issued cookie:
 
@@ -53,25 +53,25 @@ Expected order shape:
 
 ## ADR: keep sessions and commerce state together
 
-Decision: use an HTTP-only cookie containing an opaque session ID. The server owns the user record, password hash, session lookup, checkout, fulfillment transition, receipt number, and customer update log. A caller-chosen `orderId` makes checkout retries return the original order instead of creating a second one.
+Decision: use an HTTP-only cookie containing an opaque session ID. The server owns the user record, password hash, session lookup, checkout, fulfillment transition, receipt number, and customer update log. A caller-chosen `orderId` makes checkout retries return the original order instead of adding a second one.
 
 Options considered:
 
-- Hosted identity products cut local identity code, but they split the runnable example across another dashboard and data model.
-- Signed client tokens remove the session lookup, but revocation and server-controlled logout need more machinery.
-- Server-side sessions add one lookup per authenticated request. They keep revocation immediate and make the authentication boundary easy to inspect next to the order transition.
+- Hosted identity products reduce local identity code, but split the runnable example across another dashboard and data model.
+- Signed client tokens remove the session lookup, but revocation and server-controlled logout require more machinery.
+- Server-side sessions add one lookup per authenticated request. They keep revocation immediate and make the authentication boundary easy to inspect beside the order transition.
 
-This example picks the third option. The real constraint is process memory: restarting this executable clears users, sessions, and orders. Swap the three in-memory maps for a durable store before running multiple instances; keep the opaque cookie and order-ID contracts intact.
+This example chooses the third option. The real gotcha is process memory: restarting this executable clears users, sessions, and orders. Replace the three in-memory maps with a durable store before operating multiple instances; preserve the opaque cookie and order-ID contracts.
 
 ## Request boundaries
 
-Zod rejects malformed signup, login, checkout, and fulfillment bodies before state changes. CAPTCHA business rejections stay client responses. Passwords are salted with `scrypt`, cookies are HTTP-only with `SameSite=Lax`, and order reads are scoped to the authenticated customer.
+Zod rejects malformed signup, login, checkout, and fulfillment bodies before state changes. CAPTCHA business rejections remain client responses. Passwords are salted with `scrypt`, cookies are HTTP-only with `SameSite=Lax`, and order reads are scoped to the authenticated customer.
 
-The repository intentionally stops at one process. Email delivery, inventory reservation, payment capture, and persistent storage belong behind the visible checkout and fulfillment transitions when the deployment needs them.
+The repository deliberately stops at one process. Email delivery, inventory reservation, payment capture, and persistent storage belong behind the visible checkout and fulfillment transitions when the deployment needs them.
 
 ## Wiring it up for real: Session Cart Order Service
 
-The code stays small on purpose — here's what to set up before going live: The details below apply to Session Cart Order Service.
+The code stays simple on purpose — here's what to set up before going live: The details below apply to Session Cart Order Service.
 
 **Account & key**
 
@@ -79,7 +79,3 @@ The code stays small on purpose — here's what to set up before going live: The
 
 **Session Cart Order Service: CAPTCHA**
 - **Session Cart Order Service:** Verify tokens **server-side** only (`POST /v1/captcha/verify`); configure your widget/site key and a sensible score threshold.
-
-## Further reading
-
-- [Python Consent Design for Recruiting Platform Candidate Data Privacy](docs/python-consent-design-for-recruiting-platform-can-190rsh.md)
